@@ -69,3 +69,43 @@ function startVideoProcessing(videoObj, detector)
         pause(0.1); % Adjust frame rate
     end
 end
+// FOR VIDEO INPUT
+% Load the video file (can also use a webcam)
+videoFile = "your_video_file";  % Specify your video path
+vidObj = VideoReader(videoFile);
+
+% Initialize the detector (YOLOv2 as an example)
+detector = yolov2ObjectDetector('darknet19-coco');  % Using YOLO detector
+
+% Create a figure for displaying the video
+figure;
+
+% Loop through the video frames to process each frame
+while hasFrame(vidObj)
+    I = readFrame(vidObj);  % Read the next frame
+    
+    % Detect objects in the current frame
+    [bboxes, scores, labels] = detect(detector, I);
+    
+    % Display the frame
+    I_resized = I;
+    
+    % Check if any objects were detected
+    if ~isempty(bboxes)
+        % Loop through the bounding boxes and labels to display them
+        for i = 1:size(bboxes, 1)
+            % Draw the bounding box
+            I_resized = insertShape(I_resized, 'Rectangle', bboxes(i, :), 'Color', 'green', 'LineWidth', 3);
+            
+            % Add the label with confidence score next to the bounding box
+            labelText = sprintf('%s: %.2f', char(labels(i)), scores(i));
+            I_resized = insertText(I_resized, bboxes(i, 1:2), labelText, 'TextColor', 'white', 'FontSize', 12);
+        end
+    end
+    
+    % Display the image
+    imshow(I_resized);
+    title('Tracking and Detecting Objects');
+    drawnow;  % Update the figure with new frame
+
+end
